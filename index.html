@@ -20,7 +20,7 @@
             <button class="station-btn" data-src="https://hermitage.hostingradio.ru/hermitage128.mp3" data-name="Радио Эрмитаж">Радио Эрмитаж</button>
             <button class="station-btn" data-src="https://online.radiorelax.ua/RadioRelax_Int" data-name="Radio Relax Int">Radio Relax Int</button>
         </div>
-        <audio id="audioPlayer"></audio>
+        <audio id="audioPlayer" crossorigin="anonymous"></audio>
         <div class="controls">
             <button id="prevBtn" title="Previous">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
@@ -32,6 +32,16 @@
             <button id="nextBtn" title="Next">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
             </button>
+        </div>
+
+        <div class="equalizer-section">
+            <div class="eq-header">
+                <h3>Equalizer</h3>
+                <button id="resetEqBtn" class="reset-btn">Reset</button>
+            </div>
+            <div class="eq-bands">
+                <!-- Bands will be created dynamically by JS -->
+            </div>
         </div>
     </div>
 
