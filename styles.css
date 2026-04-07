@@ -1,5 +1,6 @@
+/* --- Base Styles (for Desktop) --- */
 body {
-    font-family: sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -11,27 +12,46 @@ body {
 .radio-player {
     text-align: center;
     background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 500px; /* Max width on large screens */
+    box-sizing: border-box; /* Important for padding and width calculations */
 }
 
-.station-buttons {
+h1 {
+    margin-top: 0;
+    color: #333;
+}
+
+h2#station-name {
+    color: #555;
+    min-height: 1.2em; /* Prevents layout shift when name appears */
     margin-bottom: 20px;
 }
 
+.station-buttons {
+    margin-bottom: 25px;
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap on medium screens */
+    justify-content: center;
+    gap: 10px; /* Modern way to add space between flex items */
+}
+
 .station-btn {
-    margin: 5px;
     padding: 10px 15px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    background-color: #f9f9f0;
+    background-color: #f9f9f9;
+    transition: background-color 0.2s, color 0.2s;
 }
 
 .station-btn.active {
     background-color: #4CAF50;
     color: white;
+    border-color: #4CAF50;
 }
 
 .controls {
@@ -43,13 +63,64 @@ body {
 .controls button {
     background-color: #4CAF50;
     color: white;
-    padding: 10px 20px;
+    padding: 15px;
     border: none;
-    border-radius: 5px;
+    border-radius: 50%; /* Make buttons circular */
     cursor: pointer;
-    margin: 0 5px;
+    margin: 0 10px;
+    width: 60px; /* Fixed width */
+    height: 60px; /* Fixed height */
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s;
 }
 
 .controls button:hover {
     background-color: #45a049;
+}
+
+/* New style for the playing state */
+.controls button#playPauseBtn.playing {
+    background-color: #e64a19; /* A distinct "active" color, like a deep orange */
+}
+
+.controls button#playPauseBtn.playing:hover {
+    background-color: #d84315; /* A darker shade for hover */
+}
+
+
+/* --- Mobile Styles --- */
+@media (max-width: 600px) {
+    body {
+        /* Allow scrolling on mobile if content overflows */
+        align-items: flex-start;
+    }
+
+    .radio-player {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .station-buttons {
+        flex-direction: column; /* Stack buttons vertically */
+        align-items: stretch; /* Make buttons fill the width */
+        padding: 0 20px;
+        gap: 12px;
+    }
+
+    .station-btn {
+        padding: 15px; /* Larger tap area */
+        font-size: 16px;
+    }
+
+    .controls {
+        margin-top: 20px;
+    }
 }

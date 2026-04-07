@@ -14,8 +14,6 @@ function updateMetadata(station) {
             title: station.name,
             artist: 'Online Radio',
             album: 'Live Stream',
-            // Even an empty artwork array can help convince the browser to show all controls.
-            // You could add real URLs to images here.
             artwork: [] 
         });
     }
@@ -33,14 +31,15 @@ function playStation(index) {
         const playPromise = audioPlayer.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
-                // Playback started successfully
                 playPauseBtn.textContent = 'Pause';
+                playPauseBtn.classList.add('playing'); // Add class on play
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.playbackState = 'playing';
                 }
             }).catch(error => {
                 console.error("Playback failed:", error);
                 playPauseBtn.textContent = 'Play';
+                playPauseBtn.classList.remove('playing'); // Remove class on fail
             });
         }
 
@@ -56,6 +55,7 @@ function play() {
     if (audioPlayer.src) {
         audioPlayer.play();
         playPauseBtn.textContent = 'Pause';
+        playPauseBtn.classList.add('playing'); // Add class on play
         if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = 'playing';
         }
@@ -67,6 +67,7 @@ function play() {
 function pause() {
     audioPlayer.pause();
     playPauseBtn.textContent = 'Play';
+    playPauseBtn.classList.remove('playing'); // Remove class on pause
     if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = 'paused';
     }
