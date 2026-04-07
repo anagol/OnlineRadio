@@ -1,126 +1,128 @@
-/* --- Base Styles (for Desktop) --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+:root {
+    --bg-color: #1a1a1d;
+    --card-color: #252528;
+    --text-color: #e0e0e0;
+    --text-muted: #8a8a8a;
+    --accent-gradient: linear-gradient(45deg, #f95738, #fc9e4f);
+    --accent-color: #f95738;
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: #f0f0f0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 .radio-player {
     text-align: center;
-    background-color: #fff;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: var(--card-color);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     width: 90%;
-    max-width: 500px; /* Max width on large screens */
-    box-sizing: border-box; /* Important for padding and width calculations */
+    max-width: 400px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 h1 {
     margin-top: 0;
-    color: #333;
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--text-color);
 }
 
 h2#station-name {
-    color: #555;
-    min-height: 1.2em; /* Prevents layout shift when name appears */
-    margin-bottom: 20px;
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 400;
+    min-height: 1.5em;
+    margin-bottom: 30px;
 }
 
 .station-buttons {
-    margin-bottom: 25px;
+    margin-bottom: 30px;
     display: flex;
-    flex-wrap: wrap; /* Allow buttons to wrap on medium screens */
-    justify-content: center;
-    gap: 10px; /* Modern way to add space between flex items */
+    flex-direction: column;
+    gap: 12px;
 }
 
 .station-btn {
-    padding: 10px 15px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid transparent;
+    border-radius: 10px;
     cursor: pointer;
-    background-color: #f9f9f9;
-    transition: background-color 0.2s, color 0.2s;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-color);
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.station-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .station-btn.active {
-    background-color: #4CAF50;
-    color: white;
-    border-color: #4CAF50;
+    background: var(--accent-gradient);
+    color: #fff;
+    border-color: transparent;
+    font-weight: 700;
 }
 
 .controls {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 20px;
 }
 
 .controls button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 15px;
+    background: none;
     border: none;
-    border-radius: 50%; /* Make buttons circular */
+    color: var(--text-muted);
     cursor: pointer;
-    margin: 0 10px;
-    width: 60px; /* Fixed width */
-    height: 60px; /* Fixed height */
-    font-size: 16px;
+    padding: 10px;
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background-color 0.2s;
+    transition: color 0.2s, background-color 0.2s;
 }
 
 .controls button:hover {
-    background-color: #45a049;
+    color: var(--text-color);
 }
 
-/* New style for the playing state */
-.controls button#playPauseBtn.playing {
-    background-color: #e64a19; /* A distinct "active" color, like a deep orange */
+.controls button#playPauseBtn {
+    width: 70px;
+    height: 70px;
+    background: var(--accent-gradient);
+    color: #fff;
 }
 
-.controls button#playPauseBtn.playing:hover {
-    background-color: #d84315; /* A darker shade for hover */
+.controls button#playPauseBtn:hover {
+    transform: scale(1.05);
 }
 
-
-/* --- Mobile Styles --- */
+/* Mobile adjustments */
 @media (max-width: 600px) {
-    body {
-        /* Allow scrolling on mobile if content overflows */
-        align-items: flex-start;
-    }
-
     .radio-player {
         width: 100%;
         height: 100%;
         border-radius: 0;
         box-shadow: none;
+        border: none;
         display: flex;
         flex-direction: column;
         justify-content: center;
-    }
-
-    .station-buttons {
-        flex-direction: column; /* Stack buttons vertically */
-        align-items: stretch; /* Make buttons fill the width */
-        padding: 0 20px;
-        gap: 12px;
-    }
-
-    .station-btn {
-        padding: 15px; /* Larger tap area */
-        font-size: 16px;
-    }
-
-    .controls {
-        margin-top: 20px;
     }
 }
