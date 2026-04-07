@@ -7,7 +7,6 @@
     --text-muted: #8a8a8a;
     --accent-gradient: linear-gradient(45deg, #f95738, #fc9e4f);
     --accent-color: #f95738;
-    --slider-track-color: rgba(255, 255, 255, 0.1);
 }
 
 body {
@@ -50,12 +49,11 @@ h2#station-name {
 
 .station-buttons {
     margin-bottom: 20px;
-    max-height: 150px;
-    overflow-y: auto;
+    /* max-height and overflow-y removed to disable scrollbar */
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-right: 10px;
+    /* padding-right removed as it's no longer needed */
 }
 
 .station-btn {
@@ -88,7 +86,7 @@ h2#station-name {
     justify-content: center;
     align-items: center;
     gap: 20px;
-    margin-bottom: 20px;
+    margin-top: 20px; /* Added margin top for spacing */
 }
 
 .controls button {
@@ -119,108 +117,6 @@ h2#station-name {
     transform: scale(1.05);
 }
 
-.equalizer-section {
-    margin-top: 20px;
-}
-
-.eq-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.eq-header h3 {
-    margin: 0;
-    font-size: 18px;
-    color: var(--text-color);
-}
-
-.reset-btn {
-    background: none;
-    border: 1px solid var(--text-muted);
-    color: var(--text-muted);
-    padding: 4px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s;
-}
-
-.reset-btn:hover {
-    color: var(--text-color);
-    border-color: var(--text-color);
-}
-
-.eq-bands {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 10px;
-    background-color: rgba(0,0,0,0.2);
-    border-radius: 10px;
-}
-
-.eq-band {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-.eq-band label {
-    color: var(--text-muted);
-    font-size: 12px;
-}
-
-/* Correct implementation with transform: rotate */
-.slider-container {
-    width: 30px;
-    height: 120px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.slider-container input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    cursor: pointer;
-    width: 120px; /* This becomes the height */
-    transform: rotate(-90deg);
-}
-
-/* Track Styles */
-.slider-container input[type="range"]::-webkit-slider-runnable-track {
-    height: 8px;
-    background: var(--slider-track-color);
-    border-radius: 4px;
-}
-.slider-container input[type="range"]::-moz-range-track {
-    height: 8px;
-    background: var(--slider-track-color);
-    border-radius: 4px;
-}
-
-/* Thumb Styles */
-.slider-container input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    margin-top: -5px; /* (track height - thumb height) / 2 */
-    width: 18px;
-    height: 18px;
-    background: var(--accent-color);
-    border-radius: 50%;
-}
-.slider-container input[type="range"]::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background: var(--accent-color);
-    border-radius: 50%;
-    border: none;
-}
-
 /* Mobile adjustments */
 @media (max-width: 600px) {
     .radio-player {
@@ -234,6 +130,9 @@ h2#station-name {
         justify-content: center;
     }
     .station-buttons {
-        max-height: 200px;
+        /* On mobile, we might still want a scrollbar if the list is very long */
+        max-height: 50vh;
+        overflow-y: auto;
+        padding-right: 10px;
     }
 }
