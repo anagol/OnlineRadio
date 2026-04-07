@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Radio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="radio-player">
+        <h1>Online Radio</h1>
+        <h2 id="station-name">Select a station</h2>
+        <div class="station-buttons">
+            <button class="station-btn" data-src="https://rp.amgradio.ru/RuWave48" data-name="Радио Русская Волна">Радио Русская Волна</button>
+            <button class="station-btn" data-src="https://rusradio.hostingradio.ru/rusradio128.mp3" data-name="Русское Радио">Русское Радио</button>
+            <button class="station-btn" data-src="https://dorognoe.hostingradio.ru:8000/dorognoe" data-name="Дорожное радио Санкт-Петербург">Дорожное радио Санкт-Петербург</button>
+            <button class="station-btn" data-src="https://cafe.amgradio.ru/Cafe" data-name="Radio Cafe">Radio Cafe</button>
+        </div>
+        <audio id="audioPlayer"></audio>
+        <div class="controls">
+            <button id="prevBtn">Previous</button>
+            <button id="playPauseBtn">Play</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>
