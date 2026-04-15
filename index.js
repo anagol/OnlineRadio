@@ -10,13 +10,24 @@ const pauseIcon = playPauseBtn.querySelector('.pause-icon');
 
 let currentStationIndex = -1;
 
+// Generic artwork for the media session
+const GENERIC_ARTWORK = [
+    { src: 'https://via.placeholder.com/96x96', sizes: '96x96', type: 'image/png' },
+    { src: 'https://via.placeholder.com/128x128', sizes: '128x128', type: 'image/png' },
+    { src: 'https://via.placeholder.com/192x192', sizes: '192x192', type: 'image/png' },
+    { src: 'https://via.placeholder.com/256x256', sizes: '256x256', type: 'image/png' },
+    { src: 'https://via.placeholder.com/384x384', sizes: '384x384', type: 'image/png' },
+    { src: 'https://via.placeholder.com/512x512', sizes: '512x512', type: 'image/png' },
+];
+
 function updateMetadata(station) {
     if ('mediaSession' in navigator) {
+        console.log('Updating metadata for:', station.name);
         navigator.mediaSession.metadata = new MediaMetadata({
             title: station.name,
             artist: 'Online Radio',
             album: 'Live Stream',
-            artwork: []
+            artwork: GENERIC_ARTWORK // Use generic artwork
         });
     }
 }
@@ -45,13 +56,11 @@ function playStation(index) {
         const playPromise = audioPlayer.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
-                showPauseIcon();
-                if ('mediaSession' in navigator) {
-                    navigator.mediaSession.playbackState = 'playing';
-                }
+                // Playback started successfully, UI updated by 'play' event listener
             }).catch(error => {
                 console.error("Playback failed:", error);
                 showPlayIcon();
+                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
             });
         }
 
@@ -65,25 +74,23 @@ function playStation(index) {
 
 function play() {
     if (audioPlayer.src) {
-        audioPlayer.play();
-        showPauseIcon();
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = 'playing';
-        }
+        audioPlayer.play().catch(error => {
+            console.error("Manual play failed:", error);
+            showPlayIcon();
+            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+        });
     } else if (stationButtons.length > 0) {
+        // If no station is selected, play the first one
         playStation(0);
     }
 }
 
 function pause() {
     audioPlayer.pause();
-    showPlayIcon();
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'paused';
-    }
 }
 
 function nextTrack() {
+    console.log('Executing nextTrack via button or MediaSession');
     let newIndex = currentStationIndex + 1;
     if (newIndex >= stationButtons.length) {
         newIndex = 0;
@@ -92,6 +99,7 @@ function nextTrack() {
 }
 
 function prevTrack() {
+    console.log('Executing prevTrack via button or MediaSession');
     let newIndex = currentStationIndex - 1;
     if (newIndex < 0) {
         newIndex = stationButtons.length - 1;
@@ -99,7 +107,7 @@ function prevTrack() {
     playStation(newIndex);
 }
 
-// --- Event Listeners ---
+// --- Event Listeners for UI ---
 stationButtons.forEach((button, index) => {
     button.addEventListener('click', () => {
         playStation(index);
@@ -117,10 +125,67 @@ playPauseBtn.addEventListener('click', () => {
 prevBtn.addEventListener('click', prevTrack);
 nextBtn.addEventListener('click', nextTrack);
 
+// --- Event Listeners for audioPlayer state changes ---
+audioPlayer.addEventListener('play', () => {
+    console.log('AudioPlayer: playing');
+    showPauseIcon();
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+    }
+});
+
+audioPlayer.addEventListener('pause', () => {
+    console.log('AudioPlayer: paused');
+    showPlayIcon();
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+    }
+});
+
+audioPlayer.addEventListener('ended', () => {
+    console.log('AudioPlayer: ended');
+    showPlayIcon();
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+    }
+    // Optionally, play next track automatically
+    // nextTrack();
+});
+
+audioPlayer.addEventListener('error', (e) => {
+    console.error('AudioPlayer: error', e);
+    showPlayIcon();
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+    }
+    stationName.textContent = 'Error playing station';
+});
+
+
 // --- Media Session API Integration ---
 if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('play', play);
-    navigator.mediaSession.setActionHandler('pause', pause);
-    navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
-    navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+    console.log('Setting up Media Session handlers');
+
+    navigator.mediaSession.setActionHandler('play', () => {
+        console.log('MediaSession: Play command received');
+        play();
+    });
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+        console.log('MediaSession: Pause command received');
+        pause();
+    });
+
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+        console.log('MediaSession: Previous Track command received');
+        prevTrack();
+    });
+
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+        console.log('MediaSession: Next Track command received');
+        nextTrack();
+    });
 }
+
+// Initial state
+showPlayIcon();

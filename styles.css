@@ -32,6 +32,15 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.radio-logo {
+    width: 80px; /* Adjust size as needed */
+    height: 80px; /* Adjust size as needed */
+    border-radius: 50%; /* Make it circular */
+    margin-bottom: 20px;
+    object-fit: cover; /* Ensure image covers the area */
+    border: 2px solid var(--accent-color); /* Optional border */
+}
+
 h1 {
     margin-top: 0;
     font-weight: 700;
@@ -49,11 +58,9 @@ h2#station-name {
 
 .station-buttons {
     margin-bottom: 20px;
-    /* max-height and overflow-y removed to disable scrollbar */
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* padding-right removed as it's no longer needed */
 }
 
 .station-btn {
@@ -130,7 +137,6 @@ h2#station-name {
         justify-content: center;
     }
     .station-buttons {
-        /* On mobile, we might still want a scrollbar if the list is very long */
         max-height: 50vh;
         overflow-y: auto;
         padding-right: 10px;
