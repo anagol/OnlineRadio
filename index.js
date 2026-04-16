@@ -51,17 +51,13 @@ function initAudio() {
         source.connect(analyser);
         analyser.connect(audioContext.destination);
         analyser.fftSize = 128;
-        // Resume context on user gesture
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
     } catch (e) {
         console.error("Web Audio API is not supported.", e);
     }
 }
 
 function visualize() {
-    if (!analyser || animationFrameId) return; // Don't start if already running
+    if (!analyser || animationFrameId) return;
     
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -103,7 +99,6 @@ function stopVisualizer() {
 function playStation(stationId) {
     const station = stations.find(s => s.id === stationId);
     if (station) {
-        initAudio(); // Ensure context is ready
         showLoading(true);
         audioPlayer.src = station.src;
         stationNameEl.textContent = station.name;
@@ -121,7 +116,32 @@ function playStation(stationId) {
     }
 }
 
-// ... (Rest of the functions: openModal, closeModal, renderStations, etc.)
+function addStationButtonListeners() {
+    document.querySelectorAll('.station-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            if (e.target.closest('.favorite-star')) return;
+            
+            // Crucial for mobile: init and resume audio context on user tap
+            if (!audioContext) {
+                initAudio();
+            }
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            const stationId = parseInt(button.dataset.id, 10);
+            playStation(stationId);
+        });
+
+        const star = button.querySelector('.favorite-star');
+        star.addEventListener('click', () => {
+            const stationId = parseInt(button.dataset.id, 10);
+            toggleFavorite(stationId);
+        });
+    });
+}
+
+// ... (Rest of the functions)
 function openModal() {
     modal.style.display = 'flex';
     setTimeout(() => {
@@ -171,22 +191,6 @@ function renderStations() {
     });
     addStationButtonListeners();
     filterStations(true);
-}
-
-function addStationButtonListeners() {
-    document.querySelectorAll('.station-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            if (e.target.closest('.favorite-star')) return;
-            const stationId = parseInt(button.dataset.id, 10);
-            playStation(stationId);
-        });
-
-        const star = button.querySelector('.favorite-star');
-        star.addEventListener('click', () => {
-            const stationId = parseInt(button.dataset.id, 10);
-            toggleFavorite(stationId);
-        });
-    });
 }
 
 function toggleFavorite(stationId) {
@@ -297,7 +301,14 @@ window.addEventListener('click', (e) => {
 });
 
 playPauseBtn.addEventListener('click', () => {
-    initAudio(); // Ensure context is ready
+    // Crucial for mobile: init and resume audio context on user tap
+    if (!audioContext) {
+        initAudio();
+    }
+    if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+
     if (audioPlayer.paused) {
         if (!audioPlayer.src && currentStationId) {
             playStation(currentStationId);
