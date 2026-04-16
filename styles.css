@@ -20,7 +20,44 @@ body {
     margin: 0;
     background-color: var(--bg-color);
     color: var(--text-color);
+    position: relative;
+    overflow: hidden; /* Keep this on body to prevent page scroll */
 }
+
+/* Aurora Background */
+body::before, body::after {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background-image: linear-gradient(45deg, var(--accent-color), #3f87a6);
+    filter: blur(150px);
+    z-index: -1;
+    opacity: 0.3;
+}
+
+body::before {
+    top: -20%;
+    left: -20%;
+    animation: move-aurora 20s infinite alternate;
+}
+
+body::after {
+    bottom: -20%;
+    right: -20%;
+    animation: move-aurora 15s infinite alternate-reverse;
+}
+
+@keyframes move-aurora {
+    from {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    to {
+        transform: translate(100px, 200px) rotate(180deg);
+    }
+}
+
 
 /* Screen-reader only class */
 .sr-only {
@@ -37,7 +74,8 @@ body {
 
 .radio-player {
     text-align: center;
-    background-color: var(--card-color);
+    background-color: rgba(37, 37, 40, 0.75);
+    backdrop-filter: blur(10px);
     padding: 30px;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -46,6 +84,7 @@ body {
     box-sizing: border-box;
     border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
+    z-index: 1; /* Ensure player is above the background */
 }
 
 .radio-logo {
@@ -69,6 +108,12 @@ h2#station-name {
     font-size: 16px;
     font-weight: 400;
     min-height: 1.5em;
+    margin-bottom: 15px;
+}
+
+#visualizer {
+    width: 100%;
+    height: 80px;
     margin-bottom: 15px;
 }
 
@@ -128,10 +173,6 @@ h2#station-name {
     flex-shrink: 0;
 }
 
-.station-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
 .station-btn.active {
     background: var(--accent-gradient);
     color: #fff;
@@ -154,7 +195,7 @@ h2#station-name {
 }
 
 .station-btn.active .favorite-star.is-favorite {
-    color: #fff; /* White star on active button */
+    color: #fff;
 }
 
 

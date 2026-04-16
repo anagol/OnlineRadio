@@ -12,17 +12,23 @@ const closeModalBtn = document.querySelector('.close-btn');
 const saveStationBtn = document.getElementById('saveStationBtn');
 const newStationNameInput = document.getElementById('newStationName');
 const newStationUrlInput = document.getElementById('newStationUrl');
+const visualizerCanvas = document.getElementById('visualizer');
 
 const playIcon = playPauseBtn.querySelector('.play-icon');
 const pauseIcon = playPauseBtn.querySelector('.pause-icon');
 const loadingIcon = playPauseBtn.querySelector('.loading-icon');
 
-// --- localStorage Keys ---
+// --- Audio API & Visualizer State ---
+let audioContext;
+let analyser;
+let source;
+const canvasCtx = visualizerCanvas.getContext('2d');
+let animationFrameId;
+
+// --- localStorage Keys & State ---
 const LS_LAST_STATION_KEY = 'radioPlayerLastStationId';
 const LS_STATIONS_KEY = 'radioPlayerStations';
 const LS_FAVORITES_KEY = 'radioPlayerFavorites';
-
-// --- State ---
 let stations = [];
 let favorites = [];
 let currentStationId = null;
@@ -35,8 +41,84 @@ const DEFAULT_STATIONS = [
     { id: 4, name: "Relax FM", src: "https://fed.fmplay.ru:8000/relax-32.aac" }
 ];
 
-// --- Functions ---
+// --- Visualizer Functions ---
+function setupAudioVisualizer() {
+    if (audioContext) return; // Run only once
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        source = audioContext.createMediaElementSource(audioPlayer);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        analyser.fftSize = 128;
+    } catch (e) {
+        console.error("Web Audio API is not supported.", e);
+    }
+}
 
+function visualize() {
+    if (!analyser) return;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    const draw = () => {
+        animationFrameId = requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+
+        canvasCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height); // Correct: Clear for transparency
+
+        const barWidth = (visualizerCanvas.width / bufferLength) * 2;
+        let barHeight;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+            barHeight = dataArray[i] / 2;
+            
+            const gradient = canvasCtx.createLinearGradient(0, visualizerCanvas.height, 0, visualizerCanvas.height - barHeight);
+            gradient.addColorStop(0, '#f95738');
+            gradient.addColorStop(1, '#fc9e4f');
+            canvasCtx.fillStyle = gradient;
+            
+            canvasCtx.fillRect(x, visualizerCanvas.height - barHeight, barWidth, barHeight);
+            x += barWidth + 2;
+        }
+    };
+    draw();
+}
+
+function stopVisualizer() {
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    canvasCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+}
+
+// --- Core App Functions ---
+function playStation(stationId) {
+    const station = stations.find(s => s.id === stationId);
+    if (station) {
+        if (!audioContext) { // IMPORTANT: Setup context before first play
+            setupAudioVisualizer();
+        }
+        showLoading(true);
+        audioPlayer.src = station.src;
+        stationNameEl.textContent = station.name;
+        currentStationId = station.id;
+        localStorage.setItem(LS_LAST_STATION_KEY, station.id);
+        
+        document.querySelectorAll('.station-btn').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.dataset.id, 10) === stationId);
+        });
+
+        audioPlayer.play().catch(e => {
+            console.error("Playback failed", e);
+            showLoading(false);
+        });
+    }
+}
+
+// ... (Rest of the functions: openModal, closeModal, renderStations, etc.)
 function openModal() {
     modal.style.display = 'flex';
     setTimeout(() => {
@@ -102,26 +184,6 @@ function addStationButtonListeners() {
             toggleFavorite(stationId);
         });
     });
-}
-
-function playStation(stationId) {
-    const station = stations.find(s => s.id === stationId);
-    if (station) {
-        showLoading(true);
-        audioPlayer.src = station.src;
-        stationNameEl.textContent = station.name;
-        currentStationId = station.id;
-        localStorage.setItem(LS_LAST_STATION_KEY, station.id);
-        
-        document.querySelectorAll('.station-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.dataset.id, 10) === stationId);
-        });
-
-        audioPlayer.play().catch(e => {
-            console.error("Playback failed", e);
-            showLoading(false);
-        });
-    }
 }
 
 function toggleFavorite(stationId) {
@@ -213,18 +275,18 @@ function addNewStation() {
 
 // --- Event Listeners ---
 favoritesToggle.addEventListener('change', filterStations);
-
 addStationBtn.addEventListener('click', openModal);
 closeModalBtn.addEventListener('click', closeModal);
 saveStationBtn.addEventListener('click', addNewStation);
 window.addEventListener('click', (e) => {
-    if (e.target === modal) {
-        closeModal();
-    }
+    if (e.target === modal) closeModal();
 });
 
 playPauseBtn.addEventListener('click', () => {
     if (audioPlayer.paused) {
+        if (!audioContext) { // Ensure context is created on first play
+            setupAudioVisualizer();
+        }
         if (!audioPlayer.src && currentStationId) {
             playStation(currentStationId);
         } else {
@@ -238,9 +300,22 @@ playPauseBtn.addEventListener('click', () => {
 prevBtn.addEventListener('click', prevTrack);
 nextBtn.addEventListener('click', nextTrack);
 
-audioPlayer.addEventListener('playing', () => { showLoading(false); playIcon.style.display = 'none'; pauseIcon.style.display = 'block'; });
+audioPlayer.addEventListener('playing', () => {
+    showLoading(false);
+    playIcon.style.display = 'none';
+    pauseIcon.style.display = 'block';
+    if (audioContext) {
+        audioContext.resume(); // Ensure context is active
+        visualize();
+    }
+});
 audioPlayer.addEventListener('waiting', () => showLoading(true));
-audioPlayer.addEventListener('pause', () => { showLoading(false); playIcon.style.display = 'block'; pauseIcon.style.display = 'none'; });
+audioPlayer.addEventListener('pause', () => {
+    showLoading(false);
+    playIcon.style.display = 'block';
+    pauseIcon.style.display = 'none';
+    stopVisualizer();
+});
 
 // --- Initial Load ---
 loadData();
