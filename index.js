@@ -1,18 +1,44 @@
 // --- DOM Elements ---
 const audioPlayer = document.getElementById('audioPlayer');
 const playPauseBtn = document.getElementById('playPauseBtn');
-// ... (all other DOM elements are the same)
-const modal = document.getElementById('addStationModal');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const stationButtonsContainer = document.querySelector('.station-buttons');
+const stationNameEl = document.getElementById('station-name');
+const favoritesToggle = document.getElementById('favoritesToggle');
 const addStationBtn = document.getElementById('addStationBtn');
+const modal = document.getElementById('addStationModal');
 const closeModalBtn = document.querySelector('.close-btn');
 const saveStationBtn = document.getElementById('saveStationBtn');
-// ... (and so on for all elements)
+const newStationNameInput = document.getElementById('newStationName');
+const newStationUrlInput = document.getElementById('newStationUrl');
+
+const playIcon = playPauseBtn.querySelector('.play-icon');
+const pauseIcon = playPauseBtn.querySelector('.pause-icon');
+const loadingIcon = playPauseBtn.querySelector('.loading-icon');
+
+// --- localStorage Keys ---
+const LS_LAST_STATION_KEY = 'radioPlayerLastStationId';
+const LS_STATIONS_KEY = 'radioPlayerStations';
+const LS_FAVORITES_KEY = 'radioPlayerFavorites';
+
+// --- State ---
+let stations = [];
+let favorites = [];
+let currentStationId = null;
+
+// --- Default Stations ---
+const DEFAULT_STATIONS = [
+    { id: 1, name: "Medlyak FM", src: "https://radiorecord.hostingradio.ru/mdl96.aacp" },
+    { id: 2, name: "Русское Радио", src: "https://rusradio.hostingradio.ru/rusradio96.aacp?0.7839820559672495" },
+    { id: 3, name: "Серебряный дождь", src: "https://silverrain.hostingradio.ru/silver32.aacp?radiostatistica=IRP_FMPlay" },
+    { id: 4, name: "Relax FM", src: "https://fed.fmplay.ru:8000/relax-32.aac" }
+];
 
 // --- Functions ---
 
 function openModal() {
-    modal.style.display = 'flex'; // Use flex to enable centering
-    // Use a tiny timeout to allow the display property to apply before starting the transition
+    modal.style.display = 'flex';
     setTimeout(() => {
         modal.classList.add('show');
     }, 10);
@@ -20,74 +46,10 @@ function openModal() {
 
 function closeModal() {
     modal.classList.remove('show');
-    // Wait for the transition to finish before setting display to none
     modal.addEventListener('transitionend', () => {
         modal.style.display = 'none';
-    }, { once: true }); // The listener will be removed after it runs once
+    }, { once: true });
 }
-
-// --- Event Listeners ---
-addStationBtn.addEventListener('click', openModal);
-closeModalBtn.addEventListener('click', closeModal);
-saveStationBtn.addEventListener('click', () => {
-    addNewStation();
-    // The closeModal() is now implicitly handled by addNewStation if successful
-});
-window.addEventListener('click', (e) => {
-    if (e.target === modal) {
-        closeModal();
-    }
-});
-
-function addNewStation() {
-    const name = newStationNameInput.value.trim();
-    const src = newStationUrlInput.value.trim();
-
-    if (name && src) {
-        const newStation = { id: Date.now(), name, src };
-        stations.push(newStation);
-        localStorage.setItem(LS_STATIONS_KEY, JSON.stringify(stations));
-        renderStations();
-        newStationNameInput.value = '';
-        newStationUrlInput.value = '';
-        closeModal(); // Close modal on success
-    }
-}
-
-// The rest of your index.js file remains the same.
-// I will just paste the full content to be safe.
-
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const stationButtonsContainer = document.querySelector('.station-buttons');
-const stationNameEl = document.getElementById('station-name');
-const volumeSlider = document.getElementById('volumeSlider');
-const muteBtn = document.getElementById('muteBtn');
-const favoritesToggle = document.getElementById('favoritesToggle');
-const newStationNameInput = document.getElementById('newStationName');
-const newStationUrlInput = document.getElementById('newStationUrl');
-
-const playIcon = playPauseBtn.querySelector('.play-icon');
-const pauseIcon = playPauseBtn.querySelector('.pause-icon');
-const loadingIcon = playPauseBtn.querySelector('.loading-icon');
-const volumeUpIcon = muteBtn.querySelector('.volume-up-icon');
-const volumeMuteIcon = muteBtn.querySelector('.volume-mute-icon');
-
-const LS_VOLUME_KEY = 'radioPlayerVolume';
-const LS_LAST_STATION_KEY = 'radioPlayerLastStationId';
-const LS_STATIONS_KEY = 'radioPlayerStations';
-const LS_FAVORITES_KEY = 'radioPlayerFavorites';
-
-let stations = [];
-let favorites = [];
-let currentStationId = null;
-
-const DEFAULT_STATIONS = [
-    { id: 1, name: "Medlyak FM", src: "https://radiorecord.hostingradio.ru/mdl96.aacp" },
-    { id: 2, name: "Русское Радио", src: "https://rusradio.hostingradio.ru/rusradio96.aacp?0.7839820559672495" },
-    { id: 3, name: "Серебряный дождь", src: "https://silverrain.hostingradio.ru/silver32.aacp?radiostatistica=IRP_FMPlay" },
-    { id: 4, name: "Relax FM", src: "https://fed.fmplay.ru:8000/relax-32.aac" }
-];
 
 function showLoading(isLoading) {
     loadingIcon.style.display = isLoading ? 'block' : 'none';
@@ -198,12 +160,6 @@ function loadData() {
         favorites = JSON.parse(savedFavorites);
     }
 
-    const savedVolume = localStorage.getItem(LS_VOLUME_KEY);
-    if (savedVolume !== null) {
-        volumeSlider.value = savedVolume;
-        audioPlayer.volume = savedVolume;
-    }
-
     const savedLastStationId = localStorage.getItem(LS_LAST_STATION_KEY);
     if (savedLastStationId !== null) {
         const station = stations.find(s => s.id === parseInt(savedLastStationId, 10));
@@ -214,17 +170,32 @@ function loadData() {
     }
 }
 
-function updateVolumeUI() {
-    if (audioPlayer.muted || audioPlayer.volume === 0) {
-        volumeUpIcon.style.display = 'none';
-        volumeMuteIcon.style.display = 'block';
-    } else {
-        volumeUpIcon.style.display = 'block';
-        volumeMuteIcon.style.display = 'none';
+function addNewStation() {
+    const name = newStationNameInput.value.trim();
+    const src = newStationUrlInput.value.trim();
+
+    if (name && src) {
+        const newStation = { id: Date.now(), name, src };
+        stations.push(newStation);
+        localStorage.setItem(LS_STATIONS_KEY, JSON.stringify(stations));
+        renderStations();
+        newStationNameInput.value = '';
+        newStationUrlInput.value = '';
+        closeModal();
     }
 }
 
+// --- Event Listeners ---
 favoritesToggle.addEventListener('change', filterStations);
+
+addStationBtn.addEventListener('click', openModal);
+closeModalBtn.addEventListener('click', closeModal);
+saveStationBtn.addEventListener('click', addNewStation);
+window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        closeModal();
+    }
+});
 
 playPauseBtn.addEventListener('click', () => {
     if (audioPlayer.paused) {
@@ -250,18 +221,6 @@ nextBtn.addEventListener('click', () => {
     playStation(stations[newIndex].id);
 });
 
-muteBtn.addEventListener('click', () => {
-    audioPlayer.muted = !audioPlayer.muted;
-    updateVolumeUI();
-});
-
-volumeSlider.addEventListener('input', (e) => {
-    audioPlayer.muted = false;
-    audioPlayer.volume = e.target.value;
-    localStorage.setItem(LS_VOLUME_KEY, e.target.value);
-});
-
-audioPlayer.addEventListener('volumechange', updateVolumeUI);
 audioPlayer.addEventListener('playing', () => { showLoading(false); playIcon.style.display = 'none'; pauseIcon.style.display = 'block'; });
 audioPlayer.addEventListener('waiting', () => showLoading(true));
 audioPlayer.addEventListener('pause', () => { showLoading(false); playIcon.style.display = 'block'; pauseIcon.style.display = 'none'; });
@@ -269,7 +228,6 @@ audioPlayer.addEventListener('pause', () => { showLoading(false); playIcon.style
 // --- Initial Load ---
 loadData();
 renderStations();
-updateVolumeUI();
 if (currentStationId) {
     document.querySelectorAll('.station-btn').forEach(btn => {
         btn.classList.toggle('active', parseInt(btn.dataset.id, 10) === currentStationId);
