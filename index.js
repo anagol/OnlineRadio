@@ -38,7 +38,8 @@ const DEFAULT_STATIONS = [
     { id: 1, name: "Medlyak FM", src: "https://radiorecord.hostingradio.ru/mdl96.aacp" },
     { id: 2, name: "Русское Радио", src: "https://rusradio.hostingradio.ru/rusradio96.aacp?0.7839820559672495" },
     { id: 3, name: "Серебряный дождь", src: "https://silverrain.hostingradio.ru/silver32.aacp?radiostatistica=IRP_FMPlay" },
-    { id: 4, name: "Relax FM", src: "https://fed.fmplay.ru:8000/relax-32.aac" }
+    { id: 4, name: "Relax FM", src: "https://fed.fmplay.ru:8000/relax-32.aac" },
+    { id: 5, name: "TOP40", src: "https://28503.live.streamtheworld.com/EHR_TOP_40AAC.aac?sbmid=f914a1bb-736d-45e7-b4e8-c67f317418db&gdpr=0&lsid=cookie%3A3c2da375-e727-46de-8553-6a5e0aa3b0b7&gdpr_consent=" }
 ];
 
 // --- Visualizer Functions ---
