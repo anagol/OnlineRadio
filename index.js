@@ -146,6 +146,32 @@ function filterStations() {
     });
 }
 
+function getVisibleStations() {
+    const showFavorites = favoritesToggle.checked;
+    if (showFavorites) {
+        return stations.filter(station => favorites.includes(station.id));
+    }
+    return stations;
+}
+
+function nextTrack() {
+    const visibleStations = getVisibleStations();
+    if (visibleStations.length === 0) return;
+
+    const currentIndex = visibleStations.findIndex(s => s.id === currentStationId);
+    const newIndex = (currentIndex + 1) % visibleStations.length;
+    playStation(visibleStations[newIndex].id);
+}
+
+function prevTrack() {
+    const visibleStations = getVisibleStations();
+    if (visibleStations.length === 0) return;
+
+    const currentIndex = visibleStations.findIndex(s => s.id === currentStationId);
+    const newIndex = (currentIndex - 1 + visibleStations.length) % visibleStations.length;
+    playStation(visibleStations[newIndex].id);
+}
+
 function loadData() {
     const savedStations = localStorage.getItem(LS_STATIONS_KEY);
     if (savedStations) {
@@ -209,17 +235,8 @@ playPauseBtn.addEventListener('click', () => {
     }
 });
 
-prevBtn.addEventListener('click', () => {
-    const currentIndex = stations.findIndex(s => s.id === currentStationId);
-    const newIndex = (currentIndex - 1 + stations.length) % stations.length;
-    playStation(stations[newIndex].id);
-});
-
-nextBtn.addEventListener('click', () => {
-    const currentIndex = stations.findIndex(s => s.id === currentStationId);
-    const newIndex = (currentIndex + 1) % stations.length;
-    playStation(stations[newIndex].id);
-});
+prevBtn.addEventListener('click', prevTrack);
+nextBtn.addEventListener('click', nextTrack);
 
 audioPlayer.addEventListener('playing', () => { showLoading(false); playIcon.style.display = 'none'; pauseIcon.style.display = 'block'; });
 audioPlayer.addEventListener('waiting', () => showLoading(true));
