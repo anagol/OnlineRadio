@@ -21,7 +21,7 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     position: relative;
-    overflow: hidden; /* Keep this on body to prevent page scroll */
+    overflow: hidden;
 }
 
 /* Aurora Background */
@@ -84,7 +84,7 @@ body::after {
     box-sizing: border-box;
     border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
-    z-index: 1; /* Ensure player is above the background */
+    z-index: 1;
 }
 
 .radio-logo {
@@ -169,8 +169,20 @@ h2#station-name {
     font-size: 15px;
     font-weight: 500;
     text-align: left;
-    transition: background-color 0.2s, border-color 0.2s;
     flex-shrink: 0;
+    /* Animation properties */
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.station-btn.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.station-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .station-btn.active {

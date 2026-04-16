@@ -43,7 +43,7 @@ const DEFAULT_STATIONS = [
 
 // --- Visualizer Functions ---
 function setupAudioVisualizer() {
-    if (audioContext) return; // Run only once
+    if (audioContext) return;
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
@@ -65,7 +65,7 @@ function visualize() {
         animationFrameId = requestAnimationFrame(draw);
         analyser.getByteFrequencyData(dataArray);
 
-        canvasCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height); // Correct: Clear for transparency
+        canvasCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
 
         const barWidth = (visualizerCanvas.width / bufferLength) * 2;
         let barHeight;
@@ -95,55 +95,9 @@ function stopVisualizer() {
 }
 
 // --- Core App Functions ---
-function playStation(stationId) {
-    const station = stations.find(s => s.id === stationId);
-    if (station) {
-        if (!audioContext) { // IMPORTANT: Setup context before first play
-            setupAudioVisualizer();
-        }
-        showLoading(true);
-        audioPlayer.src = station.src;
-        stationNameEl.textContent = station.name;
-        currentStationId = station.id;
-        localStorage.setItem(LS_LAST_STATION_KEY, station.id);
-        
-        document.querySelectorAll('.station-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.dataset.id, 10) === stationId);
-        });
-
-        audioPlayer.play().catch(e => {
-            console.error("Playback failed", e);
-            showLoading(false);
-        });
-    }
-}
-
-// ... (Rest of the functions: openModal, closeModal, renderStations, etc.)
-function openModal() {
-    modal.style.display = 'flex';
-    setTimeout(() => {
-        modal.classList.add('show');
-    }, 10);
-}
-
-function closeModal() {
-    modal.classList.remove('show');
-    modal.addEventListener('transitionend', () => {
-        modal.style.display = 'none';
-    }, { once: true });
-}
-
-function showLoading(isLoading) {
-    loadingIcon.style.display = isLoading ? 'block' : 'none';
-    if (isLoading) {
-        playIcon.style.display = 'none';
-        pauseIcon.style.display = 'none';
-    }
-}
-
 function renderStations() {
     stationButtonsContainer.innerHTML = '';
-    stations.forEach(station => {
+    stations.forEach(station => { // Removed unused 'index' parameter
         const button = document.createElement('button');
         button.className = 'station-btn';
         button.dataset.id = station.id;
@@ -167,7 +121,76 @@ function renderStations() {
         stationButtonsContainer.appendChild(button);
     });
     addStationButtonListeners();
-    filterStations();
+    filterStations(true); // Animate on first render
+}
+
+function filterStations(isInitialRender = false) {
+    const showFavorites = favoritesToggle.checked;
+    let visibleCount = 0;
+    document.querySelectorAll('.station-btn').forEach(button => {
+        const stationId = parseInt(button.dataset.id, 10);
+        const isVisible = !showFavorites || favorites.includes(stationId);
+        
+        button.style.display = isVisible ? 'flex' : 'none';
+        
+        if (isVisible) {
+            if (isInitialRender) {
+                button.style.transitionDelay = `${visibleCount * 50}ms`;
+                setTimeout(() => button.classList.add('visible'), 50);
+            } else {
+                button.classList.add('visible');
+            }
+            visibleCount++;
+        } else {
+            button.classList.remove('visible');
+        }
+    });
+}
+
+function playStation(stationId) {
+    const station = stations.find(s => s.id === stationId);
+    if (station) {
+        if (!audioContext) {
+            setupAudioVisualizer();
+        }
+        showLoading(true);
+        audioPlayer.src = station.src;
+        stationNameEl.textContent = station.name;
+        currentStationId = station.id;
+        localStorage.setItem(LS_LAST_STATION_KEY, station.id);
+        
+        document.querySelectorAll('.station-btn').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.dataset.id, 10) === stationId);
+        });
+
+        audioPlayer.play().catch(e => {
+            console.error("Playback failed", e);
+            showLoading(false);
+        });
+    }
+}
+
+// ... (Rest of the functions)
+function openModal() {
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+}
+
+function closeModal() {
+    modal.classList.remove('show');
+    modal.addEventListener('transitionend', () => {
+        modal.style.display = 'none';
+    }, { once: true });
+}
+
+function showLoading(isLoading) {
+    loadingIcon.style.display = isLoading ? 'block' : 'none';
+    if (isLoading) {
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'none';
+    }
 }
 
 function addStationButtonListeners() {
@@ -194,18 +217,6 @@ function toggleFavorite(stationId) {
     }
     localStorage.setItem(LS_FAVORITES_KEY, JSON.stringify(favorites));
     renderStations();
-}
-
-function filterStations() {
-    const showFavorites = favoritesToggle.checked;
-    document.querySelectorAll('.station-btn').forEach(button => {
-        const stationId = parseInt(button.dataset.id, 10);
-        if (showFavorites && !favorites.includes(stationId)) {
-            button.style.display = 'none';
-        } else {
-            button.style.display = 'flex';
-        }
-    });
 }
 
 function getVisibleStations() {
@@ -274,7 +285,7 @@ function addNewStation() {
 }
 
 // --- Event Listeners ---
-favoritesToggle.addEventListener('change', filterStations);
+favoritesToggle.addEventListener('change', () => filterStations(true));
 addStationBtn.addEventListener('click', openModal);
 closeModalBtn.addEventListener('click', closeModal);
 saveStationBtn.addEventListener('click', addNewStation);
@@ -284,7 +295,7 @@ window.addEventListener('click', (e) => {
 
 playPauseBtn.addEventListener('click', () => {
     if (audioPlayer.paused) {
-        if (!audioContext) { // Ensure context is created on first play
+        if (!audioContext) {
             setupAudioVisualizer();
         }
         if (!audioPlayer.src && currentStationId) {
@@ -305,7 +316,7 @@ audioPlayer.addEventListener('playing', () => {
     playIcon.style.display = 'none';
     pauseIcon.style.display = 'block';
     if (audioContext) {
-        audioContext.resume(); // Ensure context is active
+        audioContext.resume();
         visualize();
     }
 });
